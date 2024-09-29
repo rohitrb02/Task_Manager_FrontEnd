@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import BASE_URL from '../services/helper'
+import { ThreeDots } from 'react-loader-spinner'; // Import the loader
+import BASE_URL from '../services/helper';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // Loading state
 
   const guestUser = {
     email: "guest@gmail.com",
@@ -29,23 +31,26 @@ const Login = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission
+    setLoading(true); // Start loading
+    setError(""); // Clear any previous errors
+
     try {
-      console.log(email)
       const res = await axios.post(`${BASE_URL}/api/auth/login`, {
         email,
         password,
       });
-      console.log(res);
       localStorage.setItem("token", res.data.token);
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);
       setError("Invalid email or password. Please try again.");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex justify-center items-center min-h-screen">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
         <h2 className="text-2xl font-semibold text-center text-gray-900 mb-6">
           Login
@@ -102,9 +107,23 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 flex justify-center items-center"
+            disabled={loading} // Disable button while loading
           >
-            Submit
+            {loading ? (
+              <ThreeDots
+                height="20" 
+                width="20" 
+                radius="9"
+                color="white" 
+                ariaLabel="three-dots-loading"
+                wrapperStyle={{}}
+                wrapperClass=""
+                visible={true}
+              />
+            ) : (
+              "Submit"
+            )}
           </button>
         </form>
 

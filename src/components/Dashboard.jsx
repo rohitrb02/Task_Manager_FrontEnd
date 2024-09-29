@@ -5,8 +5,9 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import Task from "./Task"; // Assuming you have this component
 import Modal from "./Modal"; // Create a Modal component for task details or editing
 import { useNavigate } from "react-router-dom"; // Corrected navigation
-import BASE_URL from '../services/helper'
-
+import BASE_URL from '../services/helper';
+import { RotatingLines } from "react-loader-spinner"; // Import spinner from react-loader-spinner (optional)
+import '../App.css';
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -17,7 +18,7 @@ const Dashboard = () => {
   const [sortOption, setSortOption] = useState("date");
   const [loading, setLoading] = useState(false); // Loading state
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ title: '', description: '' }); // Moved formData here
+  const [formData, setFormData] = useState({ title: '', description: '' });
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -75,7 +76,7 @@ const Dashboard = () => {
 
   const editTask = (task) => {
     setSelectedTask(task);
-    setFormData({ title: task.title, description: task.description }); // Update formData
+    setFormData({ title: task.title, description: task.description });
     setIsEditing(true);
     setIsModalOpen(true);
   };
@@ -89,12 +90,12 @@ const Dashboard = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedTask(null);
-    setFormData({ title: '', description: '' }); // Reset form data
+    setFormData({ title: '', description: '' });
   };
 
   const saveTask = async (updatedTask) => {
     if (!updatedTask.title || !updatedTask.description) {
-      alert("Title and description are required!"); // Basic validation
+      alert("Title and description are required!");
       return;
     }
 
@@ -119,22 +120,22 @@ const Dashboard = () => {
         const response = await axios.post(`${BASE_URL}/api/tasks`, updatedTask, {
           headers: { Authorization: `${localStorage.getItem("token")}` },
         });
-        setTasks((prevTasks) => [...prevTasks, response.data]); // Add new task to the state
+        setTasks((prevTasks) => [...prevTasks, response.data]);
       }
       closeModal();
     } catch (error) {
       console.error("Error saving task:", error);
-      alert("Failed to save the task. Please try again."); // Notify user
+      alert("Failed to save the task. Please try again.");
     } finally {
       setLoading(false); // Set loading to false after saving
     }
   };
 
   const handleAddTask = () => {
-    setSelectedTask(null); // Clear selected task for a new task
-    setFormData({ title: '', description: '' }); // Reset form data
-    setIsEditing(true); // Set to editing mode
-    setIsModalOpen(true); // Open modal
+    setSelectedTask(null);
+    setFormData({ title: '', description: '' });
+    setIsEditing(true);
+    setIsModalOpen(true);
   };
 
   const handleSearch = (e) => {
@@ -167,7 +168,19 @@ const Dashboard = () => {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="dashboard">
-        {loading && <div className="loading-indicator">Loading...</div>} {/* Loading indicator */}
+        {/* Loading indicator with CSS spinner */}
+        {loading && (
+          <div className="loading-indicator">
+            {/* Spinner from react-loader-spinner */}
+            <RotatingLines
+              strokeColor="blue"
+              strokeWidth="5"
+              animationDuration="0.75"
+              width="50"
+              visible={true}
+            />
+          </div>
+        )}
 
         <button
           onClick={handleAddTask}
@@ -205,7 +218,7 @@ const Dashboard = () => {
               deleteTask={deleteTask}
               editTask={editTask}
               viewDetails={viewDetails}
-              columnColor={color} // Pass the color for the column
+              columnColor={color}
             />
           ))}
         </div>
@@ -217,8 +230,8 @@ const Dashboard = () => {
             closeModal={closeModal}
             isEditing={isEditing}
             saveTask={saveTask}
-            formData={formData} // Pass formData to modal
-            setFormData={setFormData} // Pass setFormData to modal
+            formData={formData}
+            setFormData={setFormData}
           />
         )}
       </div>

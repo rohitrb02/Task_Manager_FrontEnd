@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google'; // Import GoogleLogin from the new package
-import BASE_URL from '../services/helper'
-
+import { GoogleLogin } from '@react-oauth/google'; // Import GoogleLogin
+import { ThreeDots } from 'react-loader-spinner'; // Import loader
+import BASE_URL from '../services/helper';
 
 const Register = () => {
   const { register, handleSubmit } = useForm();
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState(''); // State for error message
+  const [loading, setLoading] = useState(false); // State for loading
 
   const onSubmit = async (data) => {
     if (data.password !== data.confirmPassword) {
@@ -17,12 +18,17 @@ const Register = () => {
       return;
     }
     setErrorMessage(''); // Clear error message if passwords match
+    setLoading(true); // Start loading
+
     try {
       console.log(data);
       await axios.post(`${BASE_URL}/api/auth/register`, data);
       navigate("/login"); // Redirect to login after successful registration
     } catch (error) {
       console.error('Registration error:', error);
+      setErrorMessage('Registration failed. Please try again.'); // Set error on failure
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -30,7 +36,7 @@ const Register = () => {
     try {
       console.log(credentialResponse);
       const token = credentialResponse.credential;
-      await axios.post('http://localhost:5000/api/auth/google', { token });
+      await axios.post(`${BASE_URL}/api/auth/google`, { token });
       navigate('/'); // Navigate to the homepage after Google sign-in
     } catch (error) {
       console.error('Google Sign-in error:', error);
@@ -104,9 +110,23 @@ const Register = () => {
 
           <button
             type="submit"
-            className="w-full px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300"
+            className="w-full px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 flex justify-center items-center"
+            disabled={loading} // Disable button while loading
           >
-            Submit
+            {loading ? (
+              <ThreeDots
+                height="20" 
+                width="20" 
+                radius="9"
+                color="white" 
+                ariaLabel="three-dots-loading"
+                wrapperStyle={{}}
+                wrapperClass=""
+                visible={true}
+              />
+            ) : (
+              "Submit"
+            )}
           </button>
         </form>
 
